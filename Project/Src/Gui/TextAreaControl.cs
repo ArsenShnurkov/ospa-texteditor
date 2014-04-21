@@ -96,8 +96,6 @@ namespace ICSharpCode.TextEditor
 			vScrollBar.ValueChanged += new EventHandler(VScrollBarValueChanged);
 			Controls.Add(this.vScrollBar);
 			
-			hScrollBar.ValueChanged += new EventHandler(HScrollBarValueChanged);
-			Controls.Add(this.hScrollBar);
 			ResizeRedraw = true;
 			
 			Document.TextContentChanged += DocumentTextContentChanged;
@@ -161,13 +159,13 @@ namespace ICSharpCode.TextEditor
 			
 			textArea.Bounds = new Rectangle(0, y,
 			                                Width - SystemInformation.HorizontalScrollBarArrowWidth,
-			                                Height - SystemInformation.VerticalScrollBarArrowHeight - h);
+			                                Height - h);
 			SetScrollBarBounds();
 		}
 		
 		public void SetScrollBarBounds()
 		{
-			vScrollBar.Bounds = new Rectangle(textArea.Bounds.Right, 0, SystemInformation.HorizontalScrollBarArrowWidth, Height - SystemInformation.VerticalScrollBarArrowHeight);
+			vScrollBar.Bounds = new Rectangle(textArea.Bounds.Right, 0, SystemInformation.HorizontalScrollBarArrowWidth, Height);
 			hScrollBar.Bounds = new Rectangle(0,
 			                                  textArea.Bounds.Bottom,
 			                                  Width - SystemInformation.HorizontalScrollBarArrowWidth,
@@ -248,7 +246,7 @@ namespace ICSharpCode.TextEditor
 			}
 			hScrollBar.Minimum = 0;
 			hScrollBar.Maximum = (Math.Max(max + 20, textArea.TextView.VisibleColumnCount - 1));
-			
+
 			vScrollBar.LargeChange = Math.Max(0, textArea.TextView.DrawingPosition.Height);
 			vScrollBar.SmallChange = Math.Max(0, textArea.TextView.FontHeight);
 			

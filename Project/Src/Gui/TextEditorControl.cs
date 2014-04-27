@@ -9,6 +9,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Printing;
+using System.Linq;
 using System.Windows.Forms;
 
 using ICSharpCode.TextEditor.Document;
@@ -83,6 +84,21 @@ namespace ICSharpCode.TextEditor
 			ResizeRedraw = true;
 			Document.UpdateCommited += new EventHandler(CommitUpdateRequested);
 			OptionsChanged();
+
+			Document.DocumentChanged += (sender, e) => ShowHideScrollbars();
+			SizeChanged += (sender, e) => ShowHideScrollbars();
+			ShowHideScrollbars();
+		}
+
+		private void ShowHideScrollbars()
+		{
+			int visibleLines = ActiveTextAreaControl.TextArea.TextView.VisibleLineCount;
+			int visibleColumns = ActiveTextAreaControl.TextArea.TextView.VisibleColumnCount;
+			int documentLines = Document.TotalNumberOfLines;
+			int documentColumns = Document.LineSegmentCollection.Select(x => x.Length).Max();
+			bool vscroll = documentLines > (visibleLines * 0.8);
+			bool hscroll = documentColumns > (visibleColumns * 0.8);
+			ActiveTextAreaControl.ShowScrollBars(vscroll, hscroll);
 		}
 		
 		protected virtual void InitializeTextAreaControl(TextAreaControl newControl)

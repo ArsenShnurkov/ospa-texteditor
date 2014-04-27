@@ -96,11 +96,25 @@ namespace ICSharpCode.TextEditor
 			vScrollBar.ValueChanged += new EventHandler(VScrollBarValueChanged);
 			Controls.Add(this.vScrollBar);
 			
+			hScrollBar.ValueChanged += new EventHandler(HScrollBarValueChanged);
+			Controls.Add(this.hScrollBar);
 			ResizeRedraw = true;
 			
 			Document.TextContentChanged += DocumentTextContentChanged;
 			Document.DocumentChanged += AdjustScrollBarsOnDocumentChange;
 			Document.UpdateCommited  += DocumentUpdateCommitted;
+
+			vScrollBar.VisibleChanged += (sender, e) => 
+			{ 
+				if (!vScrollBar.Visible)
+					vScrollBar.Value = 0; 
+			};
+
+			hScrollBar.VisibleChanged += (sender, e) => 
+			{ 
+				if (!hScrollBar.Visible)
+					hScrollBar.Value = 0; 
+			};
 		}
 		
 		protected override void Dispose(bool disposing)
@@ -135,6 +149,7 @@ namespace ICSharpCode.TextEditor
 			// caret position - otherwise the caret position is invalid for a short amount
 			// of time, which can break client code that expects that the caret position is always valid
 			Caret.ValidateCaretPos();
+			ResizeTextArea();
 		}
 		
 		protected override void OnResize(System.EventArgs e)
@@ -150,7 +165,7 @@ namespace ICSharpCode.TextEditor
 			if (hRuler != null) {
 				hRuler.Bounds = new Rectangle(0,
 				                              0,
-				                              Width - SystemInformation.HorizontalScrollBarArrowWidth,
+				                              Width - SystemInformation.VerticalScrollBarWidth,
 				                              textArea.TextView.FontHeight);
 				
 				y = hRuler.Bounds.Bottom;
@@ -158,18 +173,23 @@ namespace ICSharpCode.TextEditor
 			}
 			
 			textArea.Bounds = new Rectangle(0, y,
-			                                Width - SystemInformation.HorizontalScrollBarArrowWidth,
-			                                Height - h);
+			                                Width - (vScrollBar.Visible ? SystemInformation.VerticalScrollBarWidth : 0),
+			                                Height - (hScrollBar.Visible ? SystemInformation.HorizontalScrollBarHeight : 0) - h);
 			SetScrollBarBounds();
 		}
 		
 		public void SetScrollBarBounds()
 		{
-			vScrollBar.Bounds = new Rectangle(textArea.Bounds.Right, 0, SystemInformation.HorizontalScrollBarArrowWidth, Height);
-			hScrollBar.Bounds = new Rectangle(0,
-			                                  textArea.Bounds.Bottom,
-			                                  Width - SystemInformation.HorizontalScrollBarArrowWidth,
-			                                  SystemInformation.VerticalScrollBarArrowHeight);
+			vScrollBar.Bounds = new Rectangle(
+				textArea.Bounds.Right, 
+				0, 
+				SystemInformation.HorizontalScrollBarArrowWidth, 
+				Height - (hScrollBar.Visible ? SystemInformation.VerticalScrollBarArrowHeight : 0));
+			hScrollBar.Bounds = new Rectangle(
+				0,
+				textArea.Bounds.Bottom,
+				Width - (vScrollBar.Visible ? SystemInformation.HorizontalScrollBarArrowWidth : 0),
+				SystemInformation.VerticalScrollBarArrowHeight);
 		}
 		
 		bool adjustScrollBarsOnNextUpdate;
@@ -246,7 +266,7 @@ namespace ICSharpCode.TextEditor
 			}
 			hScrollBar.Minimum = 0;
 			hScrollBar.Maximum = (Math.Max(max + 20, textArea.TextView.VisibleColumnCount - 1));
-
+			
 			vScrollBar.LargeChange = Math.Max(0, textArea.TextView.DrawingPosition.Height);
 			vScrollBar.SmallChange = Math.Max(0, textArea.TextView.FontHeight);
 			
@@ -457,5 +477,13 @@ namespace ICSharpCode.TextEditor
 			Caret.ValidateCaretPos();
 			base.OnEnter(e);
 		}
+
+		public void ShowScrollBars(bool vscroll, bool hscroll)
+		{
+			vScrollBar.Visible = vscroll;
+			hScrollBar.Visible = hscroll;
+			ResizeTextArea();
+		}
+
 	}
 }
